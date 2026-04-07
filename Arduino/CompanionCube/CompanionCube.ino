@@ -271,14 +271,15 @@ uint16_t getAQIColor(int level) {
 /* ══════════════════════════════════════════════════════════════
    DISPLAY - static background
    ══════════════════════════════════════════════════════════════ */
-void drawStaticUI() {
+void drawStaticUI()
+{
   tft.fillScreen(WHITE);
 
   tft.drawCircle(120, 120, 118, DKGRAY);
   tft.drawCircle(120, 120, 116, DKGRAY);
 
-  tft.drawFastHLine(20, 85, 200, DKGRAY);
-  tft.drawFastHLine(20, 158, 200, DKGRAY);
+  tft.drawFastHLine(25, 85,  190, DKGRAY);
+  tft.drawFastHLine(25, 158, 190, DKGRAY);
   tft.drawFastVLine(120, 85, 73, DKGRAY);
 
   tft.setTextSize(1);
@@ -298,7 +299,6 @@ void drawStaticUI() {
 
   if (!ENS160_READY) {
     tft.setTextColor(DKGRAY);
-    // centered: "* SIMULATED *" = 13 chars * 6px = 78px, center = 120 - 39 = 81
     tft.setCursor(81, 220);
     tft.print("* SIMULATED *");
   }
@@ -328,69 +328,66 @@ void drawSplashScreen()
    DISPLAY - live values
    ══════════════════════════════════════════════════════════════ */
 
-void drawValues() 
+void drawValues()
 {
-  int level = getAQILevel();
+  int      level    = getAQILevel();
   uint16_t aqiColor = getAQIColor(level);
 
   // ── Time (centered) ──
-  // size 3: each char = 18px wide, "HH:MM:SS" = 8 chars = 144px, center at 120 = start at 48
   char timeBuf[9];
   snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", prevHour, prevMin, prevSec);
-  tft.fillRect(10, 30, 220, 50, WHITE);
+  tft.fillRect(40, 35, 160, 45, WHITE);
   tft.setTextSize(3);
   tft.setTextColor(RED);
   tft.setCursor(48, 48);
   tft.print(timeBuf);
 
-  // ── Humidity (left cell, centered around x=60) ──
-  tft.fillRect(20, 105, 96, 48, WHITE);
+  // ── Humidity (left cell) ──
+  tft.fillRect(25, 105, 90, 48, WHITE);
   tft.setTextSize(2);
   tft.setTextColor(RED);
-  // "48%" = 3 chars * 12px = 36px, center at 60 = start at 42
   tft.setCursor(42, 118);
   tft.print((int)hum);
   tft.print("%");
 
-  // ── Temperature (right cell, centered around x=180) ──
-  tft.fillRect(122, 105, 96, 48, WHITE);
+  // ── Temperature (right cell) ──
+  tft.fillRect(122, 105, 90, 48, WHITE);
   tft.setTextSize(2);
   tft.setTextColor(CYAN);
-  // "20.8C" = 5 chars * 12px = 60px, center at 180 = start at 150
   tft.setCursor(150, 118);
   tft.print(temp, 1);
   tft.print("C");
 
-  // ── TVOC (left cell, centered around x=60) ──
-  tft.fillRect(20, 175, 96, 30, WHITE);
+  // ── TVOC (left cell, more centered) ──
+  tft.fillRect(30, 174, 84, 28, WHITE);  
   tft.setTextSize(2);
   tft.setTextColor(BLACK);
-  // "120ppb" = 6 chars * 12px = 72px, center at 60 = start at 24
-  tft.setCursor(24, 178);
+  // "120ppb" = 6 chars * 12px = 72px, center of left cell (25+90/2=70) = start at 34
+  tft.setCursor(34, 178);
   tft.print(tvoc);
   tft.print("ppb");
 
-  // ── eCO2 (right cell, centered around x=180) ──
-  tft.fillRect(122, 175, 96, 30, WHITE);
+  // ── eCO2 (right cell, more centered) ──
+  tft.fillRect(126, 174, 84, 28, WHITE); 
   tft.setTextSize(2);
   tft.setTextColor(aqiColor);
-  // "650ppm" = 6 chars * 12px = 72px, center at 180 = start at 144
-  tft.setCursor(144, 178);
+  // "650ppm" = 6 chars * 12px = 72px, center of right cell (122+90/2=167) = start at 131
+  tft.setCursor(131, 178);
   tft.print(eco2);
   tft.print("ppm");
 
-  // ── AQI label (centered, size 2) ──
-  tft.fillRect(40, 200, 160, 20, WHITE);
+  // ── AQI label (centered) ──
+  tft.fillRect(60, 200, 120, 18, WHITE);
   tft.setTextSize(2);
   tft.setTextColor(aqiColor);
   String label = getAQILabel(level);
-  // size 2 = 12px per char
   int labelX = 120 - (label.length() * 6);
   tft.setCursor(labelX, 202);
   tft.print(label);
 
   if (level == 3) beep(3000, 40);
 }
+
 
 /* ══════════════════════════════════════════════════════════════
    SERIAL OUTPUT
