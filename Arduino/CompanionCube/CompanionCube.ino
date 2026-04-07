@@ -7,8 +7,8 @@
 #include "secrets.h"
 
 /* ── WIFI ───────────────────────────────────────────────────── */
-const char* ssid      = WIFI_SSID;
-const char* password  = WIFI_PASSWORD;
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 const char* ntpServer = "pool.ntp.org";
 
 /* ── I2C ────────────────────────────────────────────────────── */
@@ -30,14 +30,14 @@ I2C_BM8563_TimeTypeDef rtcTime;
 #define ENS160_READY false
 
 /* ── FAKE SENSOR DATA ───────────────────────────────────────── */
-float    fakeTemp = 21.5;
-float    fakeHum  = 48.0;
+float fakeTemp = 21.5;
+float fakeHum = 48.0;
 uint16_t fakeEco2 = 650;
 uint16_t fakeTvoc = 120;
 
 /* ── LIVE DATA ──────────────────────────────────────────────── */
-float    temp = 21.5;
-float    hum  = 48.0;
+float temp = 21.5;
+float hum = 48.0;
 uint16_t eco2 = 650;
 uint16_t tvoc = 120;
 
@@ -47,53 +47,51 @@ unsigned long lastSerial = 0;
 
 /* ── CLOCK CACHE ────────────────────────────────────────────── */
 int prevHour = 0;
-int prevMin  = 0;
-int prevSec  = 0;
+int prevMin = 0;
+int prevSec = 0;
 
 /* ── DISPLAY (LovyanGFX - GC9A01) ──────────────────────────── */
-class LGFX : public lgfx::LGFX_Device
-{
+class LGFX : public lgfx::LGFX_Device {
   lgfx::Panel_GC9A01 _panel_instance;
-  lgfx::Bus_SPI      _bus_instance;
+  lgfx::Bus_SPI _bus_instance;
 
 public:
-  LGFX(void)
-  {
+  LGFX(void) {
     {
       auto cfg = _bus_instance.config();
-      cfg.spi_host     = SPI2_HOST;
-      cfg.spi_mode     = 0;
-      cfg.freq_write   = 80000000;
-      cfg.freq_read    = 20000000;
-      cfg.spi_3wire    = true;
-      cfg.use_lock     = true;
-      cfg.dma_channel  = SPI_DMA_CH_AUTO;
-      cfg.pin_sclk     = 6;
-      cfg.pin_mosi     = 7;
-      cfg.pin_miso     = -1;
-      cfg.pin_dc       = 2;
+      cfg.spi_host = SPI2_HOST;
+      cfg.spi_mode = 0;
+      cfg.freq_write = 80000000;
+      cfg.freq_read = 20000000;
+      cfg.spi_3wire = true;
+      cfg.use_lock = true;
+      cfg.dma_channel = SPI_DMA_CH_AUTO;
+      cfg.pin_sclk = 6;
+      cfg.pin_mosi = 7;
+      cfg.pin_miso = -1;
+      cfg.pin_dc = 2;
       _bus_instance.config(cfg);
       _panel_instance.setBus(&_bus_instance);
     }
     {
       auto cfg = _panel_instance.config();
-      cfg.pin_cs           = 10;
-      cfg.pin_rst          = -1;
-      cfg.pin_busy         = -1;
-      cfg.memory_width     = 240;
-      cfg.memory_height    = 240;
-      cfg.panel_width      = 240;
-      cfg.panel_height     = 240;
-      cfg.offset_x         = 0;
-      cfg.offset_y         = 0;
-      cfg.offset_rotation  = 0;
+      cfg.pin_cs = 10;
+      cfg.pin_rst = -1;
+      cfg.pin_busy = -1;
+      cfg.memory_width = 240;
+      cfg.memory_height = 240;
+      cfg.panel_width = 240;
+      cfg.panel_height = 240;
+      cfg.offset_x = 0;
+      cfg.offset_y = 0;
+      cfg.offset_rotation = 0;
       cfg.dummy_read_pixel = 8;
-      cfg.dummy_read_bits  = 1;
-      cfg.readable         = false;
-      cfg.invert           = false;
-      cfg.rgb_order        = false;
-      cfg.dlen_16bit       = false;
-      cfg.bus_shared       = false;
+      cfg.dummy_read_bits = 1;
+      cfg.readable = false;
+      cfg.invert = false;
+      cfg.rgb_order = false;
+      cfg.dlen_16bit = false;
+      cfg.bus_shared = false;
       _panel_instance.config(cfg);
     }
     setPanel(&_panel_instance);
@@ -103,21 +101,20 @@ public:
 LGFX tft;
 
 /* ── COLORS ─────────────────────────────────────────────────── */
-#define BLACK   0x0000
-#define WHITE   0xFFFF
-#define CYAN    0x07FF
-#define GREEN   0x07E0
-#define YELLOW  0xFFE0
-#define ORANGE  0xFD20
-#define RED     0xF800
-#define GRAY    0x8410
-#define DKGRAY  0x4208
+#define BLACK 0x0000
+#define WHITE 0xFFFF
+#define CYAN 0x07FF
+#define GREEN 0x07E0
+#define YELLOW 0xFFE0
+#define ORANGE 0xFD20
+#define RED 0xF800
+#define GRAY 0x8410
+#define DKGRAY 0x4208
 
 /* ══════════════════════════════════════════════════════════════
    IO EXPANDER - copied exactly from factory demo
    ══════════════════════════════════════════════════════════════ */
-void init_IO_extender()
-{
+void init_IO_extender() {
   Wire.beginTransmission(PI4IO_I2C_ADDR);
   Wire.write(0x01);
   Wire.endTransmission();
@@ -137,8 +134,7 @@ void init_IO_extender()
   Wire.endTransmission();
 }
 
-void set_pin_io(uint8_t pin_number, bool value)
-{
+void set_pin_io(uint8_t pin_number, bool value) {
   Wire.beginTransmission(PI4IO_I2C_ADDR);
   Wire.write(0x05);
   Wire.endTransmission();
@@ -157,8 +153,7 @@ void set_pin_io(uint8_t pin_number, bool value)
 /* ══════════════════════════════════════════════════════════════
    BUZZER
    ══════════════════════════════════════════════════════════════ */
-void beep(int freq, int time_ms)
-{
+void beep(int freq, int time_ms) {
   tone(BUZZER_PIN, freq);
   delay(time_ms);
   noTone(BUZZER_PIN);
@@ -167,8 +162,7 @@ void beep(int freq, int time_ms)
 /* ══════════════════════════════════════════════════════════════
    WIFI + NTP
    ══════════════════════════════════════════════════════════════ */
-void syncRTCFromNTP()
-{
+void syncRTCFromNTP() {
   Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, password);
   int attempts = 0;
@@ -190,14 +184,14 @@ void syncRTCFromNTP()
     }
 
     if (getLocalTime(&timeinfo)) {
-      rtcTime.hours   = timeinfo.tm_hour;
+      rtcTime.hours = timeinfo.tm_hour;
       rtcTime.minutes = timeinfo.tm_min;
       rtcTime.seconds = timeinfo.tm_sec;
       rtc.setTime(&rtcTime);
 
-      rtcDate.year  = timeinfo.tm_year + 1900;
+      rtcDate.year = timeinfo.tm_year + 1900;
       rtcDate.month = timeinfo.tm_mon + 1;
-      rtcDate.date  = timeinfo.tm_mday;
+      rtcDate.date = timeinfo.tm_mday;
       rtc.setDate(&rtcDate);
 
       Serial.println("RTC synced from NTP.");
@@ -216,19 +210,17 @@ void syncRTCFromNTP()
 /* ══════════════════════════════════════════════════════════════
    CLOCK
    ══════════════════════════════════════════════════════════════ */
-void updateClock()
-{
+void updateClock() {
   rtc.getTime(&rtcTime);
   prevHour = rtcTime.hours;
-  prevMin  = rtcTime.minutes;
-  prevSec  = rtcTime.seconds;
+  prevMin = rtcTime.minutes;
+  prevSec = rtcTime.seconds;
 }
 
 /* ══════════════════════════════════════════════════════════════
    AIR SENSORS
    ══════════════════════════════════════════════════════════════ */
-void readAir()
-{
+void readAir() {
   if (ENS160_READY) {
     // Uncomment once ENS160 + AHT are soldered:
     // sensors_event_t humidity, tempEvent;
@@ -242,11 +234,11 @@ void readAir()
     // tvoc = ens160.getTVOC();
   } else {
     fakeTemp += random(-5, 6) * 0.1f;
-    fakeHum  += random(-3, 4) * 0.1f;
-    fakeTemp  = constrain(fakeTemp, 18.0, 28.0);
-    fakeHum   = constrain(fakeHum,  35.0, 65.0);
+    fakeHum += random(-3, 4) * 0.1f;
+    fakeTemp = constrain(fakeTemp, 18.0, 28.0);
+    fakeHum = constrain(fakeHum, 35.0, 65.0);
     temp = fakeTemp;
-    hum  = fakeHum;
+    hum = fakeHum;
     eco2 = fakeEco2;
     tvoc = fakeTvoc;
   }
@@ -255,41 +247,37 @@ void readAir()
 /* ══════════════════════════════════════════════════════════════
    AQI HELPERS
    ══════════════════════════════════════════════════════════════ */
-int getAQILevel()
-{
-  if      (eco2 < 800)  return 0;
+int getAQILevel() {
+  if (eco2 < 800) return 0;
   else if (eco2 < 1200) return 1;
   else if (eco2 < 1800) return 2;
-  else                  return 3;
+  else return 3;
 }
 
-String getAQILabel(int level)
-{
-  if      (level == 0) return "Good";
+String getAQILabel(int level) {
+  if (level == 0) return "Good";
   else if (level == 1) return "Moderate";
   else if (level == 2) return "Poor";
-  else                 return "DANGER";
+  else return "DANGER";
 }
 
-uint16_t getAQIColor(int level)
-{
-  if      (level == 0) return GREEN;
+uint16_t getAQIColor(int level) {
+  if (level == 0) return GREEN;
   else if (level == 1) return YELLOW;
   else if (level == 2) return ORANGE;
-  else                 return RED;
+  else return RED;
 }
 
 /* ══════════════════════════════════════════════════════════════
    DISPLAY - static background
    ══════════════════════════════════════════════════════════════ */
-void drawStaticUI()
-{
+void drawStaticUI() {
   tft.fillScreen(BLACK);
 
   tft.drawCircle(120, 120, 118, DKGRAY);
   tft.drawCircle(120, 120, 116, DKGRAY);
 
-  tft.drawFastHLine(20, 85,  200, DKGRAY);
+  tft.drawFastHLine(20, 85, 200, DKGRAY);
   tft.drawFastHLine(20, 158, 200, DKGRAY);
   tft.drawFastVLine(120, 85, 73, DKGRAY);
 
@@ -319,9 +307,10 @@ void drawStaticUI()
 /* ══════════════════════════════════════════════════════════════
    DISPLAY - live values
    ══════════════════════════════════════════════════════════════ */
-void drawValues()
+
+void drawValues() 
 {
-  int      level    = getAQILevel();
+  int level = getAQILevel();
   uint16_t aqiColor = getAQIColor(level);
 
   // ── Time (centered) ──
@@ -386,21 +375,27 @@ void drawValues()
 /* ══════════════════════════════════════════════════════════════
    SERIAL OUTPUT
    ══════════════════════════════════════════════════════════════ */
-void printSerial()
-{
+void printSerial() {
   int level = getAQILevel();
   Serial.println("================================");
   Serial.printf("Time     : %02d:%02d:%02d\n", prevHour, prevMin, prevSec);
-  Serial.print("Temp     : "); Serial.print(temp, 1);
+  Serial.print("Temp     : ");
+  Serial.print(temp, 1);
   Serial.println(ENS160_READY ? " C" : " C (fake)");
-  Serial.print("Humidity : "); Serial.print(hum, 0);
+  Serial.print("Humidity : ");
+  Serial.print(hum, 0);
   Serial.println(ENS160_READY ? " %" : " % (fake)");
-  Serial.print("eCO2     : "); Serial.print(eco2);
+  Serial.print("eCO2     : ");
+  Serial.print(eco2);
   Serial.println(ENS160_READY ? " ppm" : " ppm (fake)");
-  Serial.print("TVOC     : "); Serial.print(tvoc);
+  Serial.print("TVOC     : ");
+  Serial.print(tvoc);
   Serial.println(ENS160_READY ? " ppb" : " ppb (fake)");
-  Serial.print("Air      : "); Serial.print(getAQILabel(level));
-  Serial.print(" (level "); Serial.print(level); Serial.println(")");
+  Serial.print("Air      : ");
+  Serial.print(getAQILabel(level));
+  Serial.print(" (level ");
+  Serial.print(level);
+  Serial.println(")");
   Serial.println("RTC      : hardware BM8563");
   Serial.println("================================");
 }
@@ -408,8 +403,7 @@ void printSerial()
 /* ══════════════════════════════════════════════════════════════
    SETUP
    ══════════════════════════════════════════════════════════════ */
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   delay(200);
   Serial.println("Booting Companion Cube...");
@@ -457,8 +451,7 @@ void setup()
 /* ══════════════════════════════════════════════════════════════
    LOOP
    ══════════════════════════════════════════════════════════════ */
-void loop()
-{
+void loop() {
   updateClock();
 
   if (millis() - lastSensor > 5000) {
